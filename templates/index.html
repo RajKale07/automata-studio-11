@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automata Studio - Professional Automata Builder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/academic.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <svg class="header-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>Automata Studio</h1>
+            </div>
+            <p>Professional Finite Automata Builder &amp; Simulator</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="switchTab('dfa')">DFA</button>
+            <button class="tab-btn" onclick="switchTab('nfa')">NFA</button>
+            <button class="tab-btn" onclick="switchTab('regex')">Regex → DFA</button>
+            <button class="tab-btn" onclick="switchTab('turing')">Turing Machine</button>
+            <button class="tab-btn" onclick="switchTab('library')">📚 Library</button>
+            <button class="tab-btn" onclick="switchTab('editor')">Visual Editor</button>
+            <button class="tab-btn" onclick="switchTab('ai')">AI Assistant</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-wrapper">
+
+            <!-- ═══════════════════════════════════════════ DFA TAB -->
+            <aside class="sidebar tab-content" id="dfa-tab">
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">1</span> Define States &amp; Alphabet</div>
+                    <div class="input-group">
+                        <label>States</label>
+                        <input type="text" id="states" value="q0,q1,q2" placeholder="q0,q1,q2">
+                        <small>Comma-separated state names</small>
+                    </div>
+                    <div class="input-group">
+                        <label>Alphabet (Σ)</label>
+                        <input type="text" id="alphabet" value="0,1" placeholder="0,1">
+                        <small>Input symbols, comma-separated</small>
+                    </div>
+                    <div class="row-2">
+                        <div class="input-group">
+                            <label>Start State</label>
+                            <input type="text" id="start-state" value="q0" placeholder="q0">
+                        </div>
+                        <div class="input-group">
+                            <label>Final States</label>
+                            <input type="text" id="final-states" value="q2" placeholder="q2">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateTable()">Generate Transition Table →</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">2</span> Fill Transitions</div>
+                    <p class="hint">For each state and symbol, enter the next state the DFA moves to.</p>
+                    <div id="transition-table"></div>
+                    <button class="btn btn-success" onclick="drawDiagram()">Draw Diagram →</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">⚙ Operations</div>
+                    <button class="btn btn-outline" onclick="validateDFA()">✔ Validate DFA</button>
+                    <button class="btn btn-outline" onclick="minimizeDFA()">⬇ Minimize DFA</button>
+                    <button class="btn btn-outline" onclick="detectUnreachable()">🔍 Detect Unreachable States</button>
+                </div>
+
+            </aside>
+
+            <!-- ═══════════════════════════════════════════ NFA TAB -->
+            <aside class="sidebar tab-content" id="nfa-tab" style="display:none;">
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">1</span> Define States &amp; Alphabet</div>
+                    <div class="input-group">
+                        <label>States</label>
+                        <input type="text" id="nfa-states" value="q0,q1,q2" placeholder="q0,q1,q2">
+                        <small>Comma-separated</small>
+                    </div>
+                    <div class="input-group">
+                        <label>Alphabet (Σ)</label>
+                        <input type="text" id="nfa-alphabet" value="0,1,ε" placeholder="0,1,ε">
+                        <small>Use ε for epsilon transitions</small>
+                    </div>
+                    <div class="row-2">
+                        <div class="input-group">
+                            <label>Start State</label>
+                            <input type="text" id="nfa-start" value="q0" placeholder="q0">
+                        </div>
+                        <div class="input-group">
+                            <label>Final States</label>
+                            <input type="text" id="nfa-final" value="q2" placeholder="q2">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateNFATable()">Generate Transition Table →</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">2</span> Fill Transitions</div>
+                    <p class="hint">Each cell can have multiple next states — separate with commas (e.g. <code>q1,q2</code>). Leave blank if no transition.</p>
+                    <div id="nfa-transition-table"></div>
+                    <button class="btn btn-success" onclick="drawNFADiagram()">Draw NFA →</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">⚙ Operations</div>
+                    <button class="btn btn-outline" onclick="convertNFAtoDFA()">⇒ Convert NFA → DFA</button>
+                    <div class="inline-run" style="margin-top:10px;">
+                        <input type="text" id="nfa-input-string" placeholder="Test string (e.g. 010)" class="input-inline">
+                        <button class="btn btn-run" onclick="simulateNFA()">▶ Run</button>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- ═══════════════════════════════════════════ REGEX TAB -->
+            <aside class="sidebar tab-content" id="regex-tab" style="display:none;">
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">1</span> Enter Regular Expression</div>
+                    <div class="input-group">
+                        <label>Regular Expression</label>
+                        <input type="text" id="regex-input" value="(0|1)*01" placeholder="e.g. (0|1)*01">
+                    </div>
+                    <div class="operator-guide">
+                        <span class="op-chip"><code>*</code> Kleene star</span>
+                        <span class="op-chip"><code>|</code> Union (or)</span>
+                        <span class="op-chip"><code>()</code> Grouping</span>
+                    </div>
+                    <button class="btn btn-primary" onclick="convertRegexToDFA()">Convert to DFA →</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">📋 Quick Examples</div>
+                    <p class="hint">Click any example to load it.</p>
+                    <button class="btn btn-example" onclick="loadRegex('(0|1)*')">(0|1)* — All binary strings</button>
+                    <button class="btn btn-example" onclick="loadRegex('(0|1)*01')">(0|1)*01 — Ends with 01</button>
+                    <button class="btn btn-example" onclick="loadRegex('0*1*')">0*1* — Zero or more 0s then 1s</button>
+                    <button class="btn btn-example" onclick="loadRegex('(0|1)*0(0|1)*')">(0|1)*0(0|1)* — Contains a 0</button>
+                    <button class="btn btn-example" onclick="loadRegex('(00|11)*')">(00|11)* — Even pairs</button>
+                </div>
+
+            </aside>
+
+            <!-- ═══════════════════════════════════════════ TURING MACHINE TAB -->
+            <aside class="sidebar tab-content" id="turing-tab" style="display:none;">
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">1</span> Define the Machine</div>
+                    <div class="tm-formal-box">
+                        M = (Q, Σ, Γ, δ, q<sub>0</sub>, q<sub>accept</sub>, q<sub>reject</sub>)
+                    </div>
+
+                    <div class="input-group">
+                        <label>Q — All States</label>
+                        <input type="text" id="tm-states" value="q0,q1,qaccept,qreject" placeholder="q0,q1,qaccept,qreject">
+                        <small>Include every state: working states + accept + reject</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Σ — Input Alphabet <span class="badge-info">no blank</span></label>
+                        <input type="text" id="tm-input-alphabet" value="0,1" placeholder="0,1">
+                        <small>Symbols the input string can contain</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Γ — Tape Alphabet <span class="badge-info">includes blank</span></label>
+                        <input type="text" id="tm-alphabet" value="0,1,_" placeholder="0,1,_">
+                        <small>All symbols the tape can hold. Must include <code>_</code> (blank)</small>
+                    </div>
+
+                    <div class="row-3">
+                        <div class="input-group">
+                            <label>q<sub>0</sub> Start</label>
+                            <input type="text" id="tm-start" value="q0" placeholder="q0">
+                        </div>
+                        <div class="input-group">
+                            <label>q<sub>acc</sub> Accept</label>
+                            <input type="text" id="tm-accept" value="qaccept" placeholder="qaccept">
+                        </div>
+                        <div class="input-group">
+                            <label>q<sub>rej</sub> Reject</label>
+                            <input type="text" id="tm-reject" value="qreject" placeholder="qreject">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">2</span> Add Transitions (δ)</div>
+                    <p class="hint">
+                        Each transition: <strong>when in state X reading symbol Y → write Z, move direction, go to next state.</strong>
+                    </p>
+
+                    <div class="tm-add-row">
+                        <div class="tm-add-grid">
+                            <div class="input-group">
+                                <label>Current State</label>
+                                <input type="text" id="tm-add-state" placeholder="e.g. q0">
+                            </div>
+                            <div class="input-group">
+                                <label>Read Symbol</label>
+                                <input type="text" id="tm-add-read" placeholder="e.g. 0">
+                            </div>
+                            <div class="input-group">
+                                <label>Write Symbol</label>
+                                <input type="text" id="tm-add-write" placeholder="e.g. 1">
+                            </div>
+                            <div class="input-group">
+                                <label>Move Head</label>
+                                <select id="tm-add-dir">
+                                    <option value="R">R — Right</option>
+                                    <option value="L">L — Left</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Next State</label>
+                                <input type="text" id="tm-add-next" placeholder="e.g. q1">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="addTMTransition()">+ Add Transition</button>
+                    </div>
+
+                    <div id="tm-transitions-list" class="tm-list"></div>
+
+                    <button class="btn btn-success" style="margin-top:10px;" onclick="drawTMDiagram()">Draw TM Diagram →</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header"><span class="step-badge">3</span> Simulate</div>
+                    <p class="hint">Enter an input string (from Σ*) and run the machine.</p>
+                    <div class="inline-run">
+                        <input type="text" id="tm-input-string" placeholder="e.g. 0011" class="input-inline">
+                        <button class="btn btn-run" onclick="simulateTM()">▶ Run</button>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- ═══════════════════════════════════════════ LIBRARY TAB -->
+            <aside class="sidebar tab-content" id="library-tab" style="display:none;">
+
+                <div class="step-card">
+                    <div class="step-header">📚 Automata Library</div>
+                    <p class="hint">Ready-to-use examples for common languages and patterns. Click "Load" to import into the editor.</p>
+                </div>
+
+                <!-- DFA Examples -->
+                <div class="step-card">
+                    <div class="step-header">DFA Examples</div>
+                    
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Ends with "01"</strong>
+                            <button class="btn-load" onclick="loadDFAExample('ends01')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | w ends with 01}</div>
+                        <div class="lib-regex">Regex: (0|1)*01</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Even number of 0s</strong>
+                            <button class="btn-load" onclick="loadDFAExample('even0s')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | w has even number of 0s}</div>
+                        <div class="lib-regex">Regex: 1*(01*01*)*</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Contains substring "101"</strong>
+                            <button class="btn-load" onclick="loadDFAExample('contains101')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | w contains 101 as substring}</div>
+                        <div class="lib-regex">Regex: (0|1)*101(0|1)*</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Length divisible by 3</strong>
+                            <button class="btn-load" onclick="loadDFAExample('len3')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | |w| ≡ 0 (mod 3)}</div>
+                        <div class="lib-regex">Regex: ((0|1)(0|1)(0|1))*</div>
+                    </div>
+
+                </div>
+
+                <!-- NFA Examples -->
+                <div class="step-card">
+                    <div class="step-header">NFA Examples</div>
+                    
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Ends with "01" or "10"</strong>
+                            <button class="btn-load" onclick="loadNFAExample('ends0110')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | w ends with 01 or 10}</div>
+                        <div class="lib-regex">Uses ε-transitions for non-determinism</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Third symbol from end is 1</strong>
+                            <button class="btn-load" onclick="loadNFAExample('third1')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | third symbol from right is 1}</div>
+                        <div class="lib-regex">Example: 1001, 0101, 1000</div>
+                    </div>
+
+                </div>
+
+                <!-- Regex Examples -->
+                <div class="step-card">
+                    <div class="step-header">Regular Expression Examples</div>
+                    
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Email pattern (simplified)</strong>
+                            <button class="btn-load" onclick="loadRegexExample('email')">Load</button>
+                        </div>
+                        <div class="lib-desc">Pattern: letters@letters.letters</div>
+                        <div class="lib-regex">Regex: a*@a*.a*</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Binary numbers divisible by 2</strong>
+                            <button class="btn-load" onclick="loadRegexExample('div2')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | w is binary number divisible by 2}</div>
+                        <div class="lib-regex">Regex: (0|1)*0</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Alternating 01 pattern</strong>
+                            <button class="btn-load" onclick="loadRegexExample('alt01')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {01, 0101, 010101, ...}</div>
+                        <div class="lib-regex">Regex: (01)*</div>
+                    </div>
+
+                </div>
+
+                <!-- Turing Machine Examples -->
+                <div class="step-card">
+                    <div class="step-header">Turing Machine Examples</div>
+                    
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>aⁿ bⁿ (Equal a's and b's)</strong>
+                            <button class="btn-load" onclick="loadTMExample('anbn')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {aⁿ bⁿ | n ≥ 1}</div>
+                        <div class="lib-how">
+                            <strong>How it works:</strong><br>
+                            1. Mark first 'a' with 'X'<br>
+                            2. Find first 'b', mark with 'Y'<br>
+                            3. Return to start, repeat<br>
+                            4. Accept if all matched
+                        </div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>aⁿ bⁿ cⁿ (Three equal groups)</strong>
+                            <button class="btn-load" onclick="loadTMExample('anbncn')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {aⁿ bⁿ cⁿ | n ≥ 1}</div>
+                        <div class="lib-how">
+                            <strong>How it works:</strong><br>
+                            1. Mark one 'a', one 'b', one 'c'<br>
+                            2. Return to start<br>
+                            3. Repeat until all matched<br>
+                            4. This is context-sensitive!
+                        </div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Palindrome checker</strong>
+                            <button class="btn-load" onclick="loadTMExample('palindrome')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | w = wᴿ} (w reads same forwards/backwards)</div>
+                        <div class="lib-how">
+                            <strong>How it works:</strong><br>
+                            1. Mark first symbol, remember it<br>
+                            2. Go to end, check last symbol<br>
+                            3. If match, mark and continue inward<br>
+                            4. Accept if all symbols match
+                        </div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Binary increment (+1)</strong>
+                            <button class="btn-load" onclick="loadTMExample('increment')">Load</button>
+                        </div>
+                        <div class="lib-desc">Function: Add 1 to binary number</div>
+                        <div class="lib-how">
+                            <strong>How it works:</strong><br>
+                            1. Go to rightmost bit<br>
+                            2. If 0, change to 1, done<br>
+                            3. If 1, change to 0, carry left<br>
+                            4. Repeat until no carry needed
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Context-Free Examples -->
+                <div class="step-card">
+                    <div class="step-header">📈 Beyond Regular Languages</div>
+                    <p class="hint">These languages require Turing Machines (they're not regular or context-free):</p>
+                    
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>ww (String repeated twice)</strong>
+                            <button class="btn-load" onclick="loadTMExample('ww')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {ww | w ∈ {0,1}*}</div>
+                        <div class="lib-how">Examples: 00, 0101, 110110</div>
+                    </div>
+
+                    <div class="lib-item">
+                        <div class="lib-header">
+                            <strong>Equal 0s, 1s, and 2s</strong>
+                            <button class="btn-load" onclick="loadTMExample('equal012')">Load</button>
+                        </div>
+                        <div class="lib-desc">Language: {w | #₀(w) = #₁(w) = #₂(w)}</div>
+                        <div class="lib-how">Examples: 012, 102021, 210120</div>
+                    </div>
+
+                </div>
+
+            </aside>
+
+            <!-- ═══════════════════════════════════════════ VISUAL EDITOR TAB -->
+            <aside class="sidebar tab-content" id="editor-tab" style="display:none;">
+
+                <div class="step-card">
+                    <div class="step-header">📐 Visual Editor</div>
+                    <p class="hint">Build or edit any automaton visually. Changes can be saved back to any tab.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">📥 Load Automaton</div>
+                    <div class="input-group">
+                        <label>Load from which tab?</label>
+                        <select id="load-source">
+                            <option value="dfa">DFA Tab</option>
+                            <option value="nfa">NFA Tab</option>
+                            <option value="turing">Turing Machine Tab</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="loadFromTab()">⬆ Load Selected Automaton</button>
+                    <button class="btn btn-outline" onclick="generateDiagramImage()">⬇ Export as PNG</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">➕ Add State</div>
+                    <div class="input-group">
+                        <label>State Name</label>
+                        <input type="text" id="editor-state-name" placeholder="e.g. q3">
+                    </div>
+                    <div class="checkbox-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="editor-is-start"> Start State
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="editor-is-final"> Final State
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="addStateVisually()">Add State</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">➕ Add Transition</div>
+                    <div class="row-3">
+                        <div class="input-group">
+                            <label>From</label>
+                            <input type="text" id="editor-from" placeholder="q0">
+                        </div>
+                        <div class="input-group">
+                            <label>Symbol</label>
+                            <input type="text" id="editor-symbol" placeholder="0">
+                        </div>
+                        <div class="input-group">
+                            <label>To</label>
+                            <input type="text" id="editor-to" placeholder="q1">
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="addTransitionVisually()">Add Transition</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">🗑 Delete</div>
+                    <p class="hint">Click a node or edge in the diagram to select it, then delete.</p>
+                    <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
+                    <button class="btn btn-outline" onclick="clearDiagram()">Clear All</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">💾 Save Changes</div>
+                    <div class="input-group">
+                        <label>Save to which tab?</label>
+                        <select id="save-target">
+                            <option value="dfa">DFA Tab</option>
+                            <option value="nfa">NFA Tab</option>
+                            <option value="turing">Turing Machine Tab</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" onclick="saveToTab()">Save to Selected Tab</button>
+                    <div id="editor-status" style="margin-top:10px;display:none;"></div>
+                </div>
+
+            </aside>
+
+            <!-- ═══════════════════════════════════════════ AI ASSISTANT TAB -->
+            <aside class="sidebar tab-content" id="ai-tab" style="display:none;">
+
+                <div class="step-card">
+                    <div class="step-header">🤖 AI Assistant</div>
+                    <p class="hint">Build your automaton in the DFA tab first, then use AI to analyze it.</p>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">Quick Analysis</div>
+                    <button class="btn btn-outline" onclick="analyzeAutomaton()">📊 Analyze Automaton</button>
+                    <button class="btn btn-outline" onclick="explainTransition()">💬 Explain Transitions</button>
+                    <button class="btn btn-outline" onclick="suggestOptimizations()">⚡ Suggest Optimizations</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">❓ Ask a Question</div>
+                    <div class="input-group">
+                        <label>Your question</label>
+                        <textarea id="custom-query" placeholder="e.g. What strings does this automaton accept?" class="textarea-field"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="askCustomQuestion()">Ask AI</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">🔀 What-If Scenarios</div>
+                    <div class="input-group">
+                        <label>Scenario</label>
+                        <select id="whatif-scenario">
+                            <option value="add-state">Add a new state</option>
+                            <option value="remove-state">Remove a state</option>
+                            <option value="change-transition">Change a transition</option>
+                            <option value="add-final">Make a state final</option>
+                            <option value="remove-final">Remove a final state</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>State / Details</label>
+                        <input type="text" id="whatif-details" placeholder="e.g. q2">
+                    </div>
+                    <button class="btn btn-primary" onclick="runWhatIf()">Run What-If</button>
+                </div>
+
+                <div class="step-card">
+                    <div class="step-header">AI Response</div>
+                    <div id="ai-response" class="ai-response-box">
+                        <p style="color:var(--text-muted);">AI insights will appear here...</p>
+                    </div>
+                </div>
+
+            </aside>
+
+            <!-- Resizable Divider -->
+            <div class="resizer" id="resizer"></div>
+
+            <!-- Main Diagram Area -->
+            <main class="main-area">
+                <div class="diagram-section">
+                    <div class="diagram-header">
+                        <h2 id="diagram-title">DFA Diagram</h2>
+                        <div class="diagram-controls">
+                            <button class="btn-icon" onclick="resetLayout()" title="Reset Layout">↺</button>
+                            <button class="btn-icon" onclick="zoomIn()" title="Zoom In">+</button>
+                            <button class="btn-icon" onclick="zoomOut()" title="Zoom Out">−</button>
+                        </div>
+                    </div>
+                    <div id="cy" class="diagram-canvas"></div>
+                    <div class="diagram-info">
+                        <p>💡 Tip: Use the <strong>Visual Editor</strong> tab to edit the diagram interactively.</p>
+                    </div>
+                </div>
+
+                <div class="h-resizer" id="h-resizer"></div>
+
+                <div class="simulator-section">
+                    <h3 id="sim-title">Test Your DFA</h3>
+                    <div class="inline-run">
+                        <input type="text" id="input-string" placeholder="Enter input string (e.g. 0110)" class="input-inline">
+                        <button class="btn btn-run" onclick="simulate()">▶ Run</button>
+                        <button class="btn btn-reset" onclick="resetSim()">↺ Reset</button>
+                    </div>
+                    <div id="result" class="result-box"></div>
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
